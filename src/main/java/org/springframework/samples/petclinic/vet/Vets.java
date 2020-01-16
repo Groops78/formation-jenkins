@@ -35,9 +35,9 @@ public class Vets {
     @XmlElement
     public List<Vet> getVetList() {
         if (vets == null) {
-            vets = new ArrayList<>();
+            this.vets = new ArrayList<>();
         }
-        return vets;
+        return this.vets;
     }
 
 }
