@@ -11,22 +11,25 @@ pipeline {
             sh "mvn clean package"
             
             // Run Maven checkstyle.
-            sh "mvn checkstyle:checkstyle"
-            
-            // Run Maven tests.
+            sh "mvn checkstyle:checkstyle"          
+         }
+      }
+      stage('Test') {
+      	steps {
+      		// Run Maven tests.
             sh "mvn spring-boot:start jmeter:jmeter spring-boot:stop"
+        }
 
-         }
+        post {
+	        // If Maven was able to run the tests, even if some of the test
+	        // failed, record the test results and archive the jar file.
+	        success {
+	            checkstyle canComputeNew: false, defaultEncoding: '', healthy: '', pattern: '**/checkstyle-result.xml', unHealthy: ''
+	           junit '**/surefire-reports/*.xml'
+	           perfReport filterRegex: '', sourceDataFiles: '**/*.jtl'
+        	}
 
-         post {
-            // If Maven was able to run the tests, even if some of the test
-            // failed, record the test results and archive the jar file.
-            success {
-                checkstyle canComputeNew: false, defaultEncoding: '', healthy: '', pattern: '**/checkstyle-result.xml', unHealthy: ''
-               junit '**/surefire-reports/*.xml'
-               perfReport filterRegex: '', sourceDataFiles: '**/*.jtl'
-            }
-         }
+      	}
       }
    }
 }
