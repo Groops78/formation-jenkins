@@ -1,0 +1,32 @@
+pipeline {
+   agent any
+
+   stages {
+      stage('Build') {
+         steps {
+            // Get some code from a GitHub repository
+            git credentialsId: 'ce45bc8e-b49d-4b27-9a0a-37503488c580', url: 'https://github.com/Groops78/formation-jenkins.git'
+
+            // Run Maven clean package.
+            sh "mvn clean package"
+            
+            // Run Maven checkstyle.
+            sh "mvn checkstyle:checkstyle"
+            
+            // Run Maven tests.
+            sh "mvn spring-boot:start jmeter:jmeter spring-boot:stop"
+
+         }
+
+         post {
+            // If Maven was able to run the tests, even if some of the test
+            // failed, record the test results and archive the jar file.
+            success {
+                checkstyle canComputeNew: false, defaultEncoding: '', healthy: '', pattern: '**/checkstyle-result.xml', unHealthy: ''
+               junit '**/surefire-reports/*.xml'
+               perfReport filterRegex: '', sourceDataFiles: '**/*.jtl'
+            }
+         }
+      }
+   }
+}
